@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 
-export LC_ALL='C'
+#TODO: check if g{cc,++} is working
 
-#TODO: bzip2 output '--version' to stderr
+num_lines=$(wc -l < tools.txt)
 
-common_cmds=$(more tools.txt)
-
-for cmds in ${common_cmds[*]}; do
-	tool=$(eval "${cmds} --version | tr ' ' '\n'")
+for (( lines=1; lines<="$num_lines"; lines++ )); do
+	cmd=$(sed -n "${lines}p" tools.txt)
+	data=$(eval "${cmd} --version" 2>&-)
+	tool=$(tr ' ' '\n' <<< "$data")
 
 	tool_version=$(grep -Eo -m 1 \
 		"^[0-9]+\.([0-9]+)(\.([0-9]+)|)" <<< "$tool")
 
-	echo -e "${cmds}: ${tool_version}"
+	cmd=$(sed -En '/(([[:alnum:]])+)(.*)/{s//\1/p;q}' <<< "$cmd")
+	echo "${cmd}: ${tool_version}"
 
 	sleep 0.2
 done
